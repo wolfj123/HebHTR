@@ -22,10 +22,9 @@ def getModel(decoder_type):
         decoderType = DecoderType.WordBeamSearch
     else:
         decoderType = DecoderType.BestPath
-
-    model = Model(open(FilePaths.fnCharList).read(), decoderType,
-                  mustRestore=True)
-    return model
+    with open(FilePaths.fnCharList, encoding='utf-8') as f:
+        model = Model(f.read(), decoderType,  mustRestore=True)
+        return model
 
 
 def predictWord(image, model):
