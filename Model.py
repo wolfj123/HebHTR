@@ -1,5 +1,12 @@
+import os
+import sys
 import numpy as np
 import tensorflow as tf
+
+# Import the required module from CTCWordBeamSearch
+from word_beam_search import WordBeamSearch
+
+
 
 '''
 Handwritten text recognition model written by Harald Scheidl:
