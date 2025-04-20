@@ -5,7 +5,7 @@ img = HebHTR('input/image.png')
 
 # Infer words from image.
 # text = img.imgToWord(iterations=5, decoder_type='word_beam')
-text = img.imgToWord(iterations=5, decoder_type='best_path')
+text = img.imgToWord(iterations=5, decoder_type='word_beam')
 
 
 print(text)

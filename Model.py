@@ -80,25 +80,45 @@ class Model:
 
     def decode(self, y_pred, input_lengths):
         if self.decoderType == DecoderType.BestPath:
+            # Perform CTC decoding
             decoded, _ = tf.keras.backend.ctc_decode(y_pred, input_length=input_lengths, greedy=True)
-            return decoded[0]
+
+            # Check if the output is already dense
+            if isinstance(decoded[0], tf.SparseTensor):
+                decoded_dense = tf.sparse.to_dense(decoded[0]).numpy()
+            else:
+                decoded_dense = decoded[0].numpy()
+
+            # Map indices to characters
+            result = []
+            for sequence in decoded_dense:
+                text = ''.join([self.charList[idx] for idx in sequence if idx != -1])  # Ignore padding (-1)
+                result.append(text)
+            return result
 
         elif self.decoderType == DecoderType.WordBeamSearch:
-            word_beam_search_module = tf.load_op_library('./TFWordBeamSearch.so')
-            softmax_out = y_pred.numpy()
-            chars = ''.join(self.charList)
+            # Word Beam Search decoding
+            chars = ''.join(self.charList)  # Characters that can be recognized
             with open('model/wordCharList.txt', 'r', encoding='utf-8') as f:
-                wordChars = f.read().splitlines()[0]
-            corpus = open('data/corpus.txt', 'r', encoding='utf-8').read()
-            decoded = word_beam_search_module.word_beam_search(
-                softmax_out,
-                beamWidth=50,
-                mode='Words',
-                corpus=corpus.encode('utf-8'),
-                chars=chars.encode('utf-8'),
-                wordChars=wordChars.encode('utf-8')
-            )
-            return decoded
+                wordChars = f.read().strip()  # Characters that form words
+            with open('data/corpus.txt', 'r', encoding='utf-8') as f:
+                corpus = f.read().strip()  # Corpus for language model
 
+            # Initialize WordBeamSearch
+            wbs = WordBeamSearch(25, 'Words', 0.0, corpus.encode('utf8'), chars.encode('utf8'), wordChars.encode('utf8'))
+
+            # Convert predictions to numpy array
+            softmax_out = y_pred.numpy()
+
+            # Compute label string using WordBeamSearch
+            label_str = wbs.compute(softmax_out)
+
+            # Map indices to characters
+            result = []
+            for sequence in label_str:
+                text = ''.join([self.charList[idx] for idx in sequence if idx != -1])  # Ignore padding (-1)
+                result.append(text)
+            return result
+    
     def summary(self):
         self.model.summary()
