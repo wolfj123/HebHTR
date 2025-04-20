@@ -83,11 +83,11 @@ class Model:
             # Perform CTC decoding
             decoded, _ = tf.keras.backend.ctc_decode(y_pred, input_length=input_lengths, greedy=True)
 
-            # Check if the output is already dense
+            # Check if the output is a SparseTensor
             if isinstance(decoded[0], tf.SparseTensor):
                 decoded_dense = tf.sparse.to_dense(decoded[0]).numpy()
             else:
-                decoded_dense = decoded[0].numpy()
+                decoded_dense = decoded[0]  # Already a NumPy array
 
             # Map indices to characters
             result = []
@@ -99,7 +99,7 @@ class Model:
         elif self.decoderType == DecoderType.WordBeamSearch:
             # Word Beam Search decoding
             chars = ''.join(self.charList)  # Characters that can be recognized
-            with open('model/wordCharList.txt', 'r', encoding='utf-8') as f:
+            with open('model/wordCharList_utf8.txt', 'r', encoding='utf-8') as f:
                 wordChars = f.read().strip()  # Characters that form words
             with open('data/corpus.txt', 'r', encoding='utf-8') as f:
                 corpus = f.read().strip()  # Corpus for language model
@@ -107,11 +107,8 @@ class Model:
             # Initialize WordBeamSearch
             wbs = WordBeamSearch(25, 'Words', 0.0, corpus.encode('utf8'), chars.encode('utf8'), wordChars.encode('utf8'))
 
-            # Convert predictions to numpy array
-            softmax_out = y_pred.numpy()
-
             # Compute label string using WordBeamSearch
-            label_str = wbs.compute(softmax_out)
+            label_str = wbs.compute(y_pred)  # y_pred is already a NumPy array
 
             # Map indices to characters
             result = []
@@ -119,6 +116,6 @@ class Model:
                 text = ''.join([self.charList[idx] for idx in sequence if idx != -1])  # Ignore padding (-1)
                 result.append(text)
             return result
-    
+        
     def summary(self):
         self.model.summary()
