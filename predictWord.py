@@ -12,19 +12,27 @@ class FilePaths:
     fnCorpus = 'data/corpus.txt'
 
 def infer(model, image):
-    img = preprocessImageForPrediction(image, Model.imgSize)
-    batch = Batch(None, [img])
-    recognized = model.inferBatch(batch, True)[0]
-    return recognized
+    # Use the imgSize from the model instance
+    img = preprocessImageForPrediction(image, model.imgSize)
+    y_pred = model.model.predict(img)
+    input_lengths = [y_pred.shape[1]]  # Length of the sequence
+    decoded = model.decode(y_pred, input_lengths)
+    return decoded
 
 def getModel(decoder_type):
-    if decoder_type == 'word_beam':
-        decoderType = DecoderType.WordBeamSearch
-    else:
-        decoderType = DecoderType.BestPath
-    with open(FilePaths.fnCharList, encoding='utf-8') as f:
-        model = Model(f.read(), decoderType,  mustRestore=True)
-        return model
+    with open('./model/charList.txt', 'r', encoding='utf-8') as f:
+        charList = f.read().splitlines()
+
+    # Define the required parameters
+    imgSize = (128, 32)  # Example image size (height, width)
+    maxTextLen = 32      # Example maximum text length
+
+    # Map decoder_type string to DecoderType enum
+    decoderType = DecoderType.BestPath if decoder_type == 'best_path' else DecoderType.WordBeamSearch
+
+    # Create and return the Model instance
+    model = Model(charList, batchSize=1, imgSize=imgSize, maxTextLen=maxTextLen, decoderType=decoderType, mustRestore=True)
+    return model
 
 
 def predictWord(image, model):
