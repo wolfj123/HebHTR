@@ -21,7 +21,7 @@ def infer(model, image):
 
 def getModel(decoder_type):
     with open('./model/charList.txt', 'r', encoding='utf-8') as f:
-        charList = f.read().splitlines()
+        charList = list(f.read().strip())
 
     # Define the required parameters
     imgSize = (128, 32)  # Example image size (height, width)

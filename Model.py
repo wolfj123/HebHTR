@@ -104,6 +104,9 @@ class Model:
             with open('data/corpus.txt', 'r', encoding='utf-8') as f:
                 corpus = f.read().strip()  # Corpus for language model
 
+            print("y_pred shape:", y_pred.shape)  # Should be (batch_size, time_steps, num_classes)
+            print("Number of characters in chars:", len(chars))
+
             # Initialize WordBeamSearch
             wbs = WordBeamSearch(25, 'Words', 0.0, corpus.encode('utf8'), chars.encode('utf8'), wordChars.encode('utf8'))
 
