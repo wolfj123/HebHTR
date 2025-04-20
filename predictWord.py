@@ -31,7 +31,7 @@ def getModel(decoder_type):
     decoderType = DecoderType.BestPath if decoder_type == 'best_path' else DecoderType.WordBeamSearch
 
     # Create and return the Model instance
-    model = Model(charList, batchSize=1, imgSize=imgSize, maxTextLen=maxTextLen, decoderType=decoderType, mustRestore=False)
+    model = Model(charList, batchSize=1, imgSize=imgSize, maxTextLen=maxTextLen, decoderType=decoderType, mustRestore=True)
     return model
 
 

@@ -41,10 +41,12 @@ class Model:
             self._restore_weights()
 
     def _restore_weights(self):
-        """Restore model weights from a checkpoint."""
-        checkpoint_path = './model_checkpoint.h5'  # Example checkpoint path
+        """Restore model weights from a TensorFlow checkpoint."""
+        checkpoint_path = './model/snapshot-6'  # Path to the checkpoint (without extensions)
         try:
-            self.model.load_weights(checkpoint_path)
+            # Use TensorFlow's Checkpoint to load weights
+            checkpoint = tf.train.Checkpoint(model=self.model)
+            checkpoint.restore(checkpoint_path).expect_partial()
             print(f"Model weights restored from {checkpoint_path}")
         except Exception as e:
             print(f"Failed to restore model weights: {e}")
